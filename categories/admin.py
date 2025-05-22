@@ -1,6 +1,8 @@
 from django.contrib import admin
-from . import models
+from . import models  # Make sure to import your Category model
 
-# Register your models here.
+class CategoryAdmin(admin.ModelAdmin):
+    prepopulated_fields = {'slug' : ('name',)}  # Auto-create slug from name
+    list_display = [ 'name', 'slug' ]  # Show these fields in list view
 
-admin.site.register(models.Category)
+admin.site.register(models.Category, CategoryAdmin)
