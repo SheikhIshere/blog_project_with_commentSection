@@ -23,7 +23,7 @@
                                     <i class="fas fa-user text-primary"></i>
                                 </div>
                                 <div>
-                                    <p class="mb-0 small text-muted">Written by</p>
+                                    <p class="mb-0 small text-muted">Posted by</p>
                                     <p class="mb-0">
                                         {% if post.author.get_full_name %}
                                             {{ post.author.get_full_name }}
@@ -64,180 +64,135 @@
                     </div>
                     
                     <!-- Action Buttons -->
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'homepage' %}" class="btn btn-outline-primary">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mt-4">
+                        <a href="{% url 'homepage' %}" class="btn btn-outline-primary flex-grow-1 w-100 text-center">
                             <i class="fas fa-arrow-left me-1"></i> Back to Home
                         </a>
+                        
                         {% if request.user == post.author %}
-                        <div class="btn-group">
-                            <a href="{% url 'edit_post' post.id %}" class="btn btn-outline-warning">
+                        <div class="d-flex flex-grow-1 w-100 gap-2">
+                            <a href="{% url 'edit_post' post.id %}" class="btn btn-outline-warning flex-grow-1 text-center">
                                 <i class="fas fa-edit me-1"></i> Edit
                             </a>
-                            <a href="{% url 'delete_post' post.id %}" class="btn btn-outline-danger">
+                            <a href="{% url 'delete_post' post.id %}" class="btn btn-outline-danger flex-grow-1 text-center">
                                 <i class="fas fa-trash-alt me-1"></i> Delete
                             </a>
                         </div>
                         {% endif %}
+                        
+                        <form method="post" action="{% url 'like_post' post.id %}" class="flex-grow-1 w-100">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" class="btn btn-outline-danger btn-like position-relative w-100">
+                                <span class="like-content">
+                                    {% if user.is_authenticated and is_liked %}
+                                        <i class="fas fa-heart me-1"></i> Liked
+                                    {% else %}
+                                        <i class="far fa-heart me-1"></i> Like
+                                    {% endif %}
+                                </span>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                                    {{ post.total_likes }}
+                                    <span class="visually-hidden">likes</span>
+                                </span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
             
-<!-- Replace your current comment section with this code -->
-<div class="comments-section mt-5">
-    <div class="d-flex align-items-center mb-4">
-        <h4 class="mb-0">
-            <i class="fas fa-comments me-2 text-primary"></i>Discussion ({{ comments.count }})
-        </h4>
-        <div class="ms-3 badge bg-light text-dark">
-            <i class="fas fa-lock-open me-1"></i> Public forum
-        </div>
-    </div>
-
-    <!-- Comment Form -->
-    {% if user.is_authenticated %}
-    <div class="card mb-4 border-0 shadow-sm">
-        <div class="card-body p-4">
-            <div class="d-flex">
-                <div class="flex-shrink-0 me-3">
-                    <div class="avatar avatar-sm rounded-circle bg-light text-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                        <i class="fas fa-user"></i>
-                    </div>
+            <!-- Comment Section -->
+            <div class="comments-section mt-5">
+                <div class="d-flex align-items-center mb-4">
+                    <h4 class="mb-0">
+                        <i class="fas fa-comments me-2 text-primary"></i>Comments ({{ post.comment_count }})
+                    </h4>
                 </div>
-                <div class="flex-grow-1">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="id_body" class="form-label small text-muted">Your comment</label>
-                            {{ comment_form.body }}
-                            <div class="form-text">Markdown formatting supported</div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i class="fas fa-paper-plane me-2"></i> Post Comment
-                            </button>
-                            <small class="text-muted">Comments are public</small>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <div class="alert alert-info d-flex align-items-center">
-        <i class="fas fa-info-circle me-2"></i>
-        <div>
-            Please <a href="{% url 'login' %}?next={{ request.path }}" class="alert-link">sign in</a> to participate in the discussion.
-        </div>
-    </div>
-    {% endif %}
 
-    <!-- Comments List -->
-    {% if comments %}
-    <div class="comments-list">
-        {% for comment in comments %}
-        <div class="card mb-3 border-0 shadow-sm">
-            <div class="card-body p-4">
-                <div class="d-flex">
-                    <div class="flex-shrink-0 me-3">
-                        <div class="avatar avatar-sm rounded-circle bg-light text-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                            <i class="fas fa-user"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">
-                                {% if comment.user %}
-                                    <span class="text-primary">{{ comment.user.username }}</span>
+                <!-- Comment Form -->
+                {% if user.is_authenticated %}
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body p-2 p-sm-3">
+                        <div class="d-flex align-items-start">
+                            <!-- User Avatar -->
+                            <div class="flex-shrink-0 me-2 me-sm-3">
+                                {% if request.user.profile.avatar %}
+                                    <img src="{{ request.user.profile.avatar.url }}" class="rounded-circle" width="40" height="40" alt="Profile" style="object-fit: cover;">
                                 {% else %}
-                                    <span class="text-muted">{{ comment.name }}</span>
+                                    <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: #e4e6eb; color: #1d1f23;">
+                                        {{ request.user.first_name|first|upper }}
+                                    </div>
                                 {% endif %}
-                                <span class="badge bg-light text-dark ms-2">
-                                    <i class="fas fa-user-shield"></i> Verified
-                                </span>
-                            </h6>
-                            <small class="text-muted" title="{{ comment.created_on|date:'F j, Y, P' }}">
-                                <i class="far fa-clock me-1"></i>{{ comment.created_on|timesince }} ago
-                            </small>
+                            </div>
+                            
+                            <!-- Comment Form -->
+                            <div class="flex-grow-1">
+                                <form method="post" class="comment-form">
+                                    {% csrf_token %}
+                                    <div class="form-floating mb-2">
+                                        <textarea name="body" id="id_body" class="form-control" placeholder="Write a comment..." style="min-height: 40px; border-radius: 20px; padding: 10px 15px;"></textarea>                                        
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <button type="submit" class="btn btn-primary btn-sm px-3 py-1">
+                                            <span class="d-none d-sm-inline">Post</span>
+                                            <i class="fas fa-paper-plane d-sm-none"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                        <div class="comment-body mb-3">
-                            {{ comment.body|linebreaks }}
-                        </div>                        
                     </div>
                 </div>
+                {% else %}
+                <div class="alert alert-info d-flex align-items-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <div>
+                        Please <a href="{% url 'user_login' %}?next={{ request.path }}" class="alert-link">sign in</a> to participate in the discussion.
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Comments List -->
+                {% if comments %}
+                <div class="comments-list">
+                    {% for comment in comments %}
+                    <div class="card mb-2 border-0">
+                        <div class="card-body p-2">
+                            <div class="d-flex">
+                                <!-- Commenter Avatar -->
+                                <div class="flex-shrink-0 me-2 me-sm-3">
+                                    {% if comment.user.profile.avatar %}
+                                        <img src="{{ comment.user.profile.avatar.url }}" class="rounded-circle" width="40" height="40" alt="Profile" style="object-fit: cover;">
+                                    {% else %}
+                                        <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: #e4e6eb; color: #1d1f23;">
+                                            {{ comment.user.first_name|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Comment Content -->
+                                <div class="flex-grow-1">
+                                    <div class="d-flex flex-wrap align-items-center mb-1">
+                                        <h6 class="mb-0 me-2 fw-bold" style="font-size: 0.9375rem;">{{ comment.user.get_full_name|default:comment.user.username }}</h6>
+                                        <small class="text-muted" style="font-size: 0.8125rem;">{{ comment.created_on|timesince }} ago</small>
+                                    </div>
+                                    <div class="comment-text mb-1" style="font-size: 0.9375rem; line-height: 1.4;">
+                                        {{ comment.body|linebreaks }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state text-center py-5">
+                    <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
+                    <h5 class="mb-2">No comments yet</h5>
+                    <p class="text-muted">Be the first to share your thoughts!</p>
+                </div>
+                {% endif %}
             </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="empty-state text-center py-5">
-        <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
-        <h5 class="mb-2">No comments yet</h5>
-        <p class="text-muted">Be the first to share your thoughts!</p>
-    </div>
-    {% endif %}
-</div>
-
-<style>
-    /* Comment Section Styling */
-    .comments-section {
-        background-color: #f8f9fa;
-        border-radius: 12px;
-        padding: 2rem;
-    }
-    
-    .avatar {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-    }
-    
-    .comment-body {
-        font-size: 0.95rem;
-        line-height: 1.7;
-        color: #495057;
-    }
-    
-    #id_body {
-        min-height: 100px;
-        border-radius: 8px;
-        border: 1px solid #dee2e6;
-        padding: 12px;
-    }
-    
-    .empty-state {
-        background-color: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    
-    .comment-actions .btn {
-        padding: 0.25rem 0.75rem;
-        font-size: 0.8rem;
-    }
-    
-    @media (max-width: 576px) {
-        .comments-section {
-            padding: 1rem;
-        }
-    }
-    @media (max-width: 576px) {
-    .comments-section {
-        padding: 1rem;
-    }
-
-    .comments-section .d-flex {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .comments-section .me-3 {
-        margin-right: 0 !important;
-        margin-bottom: 1rem;
-    }
-}
-
-</style>
 
             <!-- Related Posts Section -->
             {% if related_posts %}
@@ -285,30 +240,80 @@
 </div>
 
 <style>
+    /* Post Content Styling */
     .post-content {
         font-size: 1.1rem;
         line-height: 1.8;
         color: #333;
     }
-    .post-content img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 8px;
-        margin: 1rem 0;
-    }
+    
+    /* Card Styling */
     .card {
         border-radius: 12px;
         overflow: hidden;
         border: none;
     }
+    
     .card-img-top {
         border-radius: 12px 12px 0 0;
     }
-    .badge {
-        font-weight: 500;
-    }
-    .btn-outline-primary, .btn-outline-warning, .btn-outline-danger {
+    
+    /* Button Styling */
+    .btn-like {
+        border-radius: 20px;
+        padding: 6px 16px;
+        transition: all 0.3s ease;
         border-width: 2px;
+    }
+    
+    .btn-like:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-like .fa-heart {
+        transition: all 0.3s ease;
+    }
+    
+    /* Comment Section Styling */
+    .comment-form textarea {
+        min-height: 40px;
+        max-height: 200px;
+        resize: none;
+        border-radius: 20px;
+        padding: 10px 15px !important;
+        border: 1px solid #ddd;
+        background-color: #f0f2f5;
+        transition: all 0.2s;
+    }
+    
+    .comment-form textarea:focus {
+        background-color: white;
+        border-color: #0866ff;
+        box-shadow: 0 0 0 2px #e7f3ff !important;
+    }
+    
+    .empty-state {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 0.75rem;
+        }
+        
+        .comment-form textarea {
+            padding: 8px 12px !important;
+            border-radius: 18px;
+        }
+        
+        .btn-primary {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8125rem;
+        }
     }
 </style>
 {% endblock %}

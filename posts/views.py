@@ -4,13 +4,19 @@ from . import models
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from .models import Post  # Import your Post model
+from .models import Post, Like  # Import your Post model
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, UpdateView, DetailView
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from .forms import CommentForm
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+
+
+
+
 
 
 #@login_required
@@ -33,8 +39,11 @@ class EditPostView(UpdateView):
     model = models.Post
     form_class = forms.PostForm
     template_name = 'add_post.html'
-    pk_url_kwarg = 'id'
-    success_url = reverse_lazy('profile')
+    pk_url_kwarg = 'id'    
+    
+    def get_success_url(self):
+        # Redirect back to the post detail page after editing
+        return reverse_lazy('post_detail', kwargs={'id': self.object.id})
 
 
 
@@ -114,7 +123,13 @@ class ModelDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = self.object
-        
+        user = self.request.user
+
+        # Check if the current user has liked the post
+        is_liked = False
+        if user.is_authenticated:
+            is_liked = post.is_liked_by(user)  # Assuming `is_liked_by()` is a method in your Post model
+
         # Get related posts
         related_posts = models.Post.objects.filter(
             Q(category__in=post.category.all()) & 
@@ -124,15 +139,15 @@ class ModelDetailView(DetailView):
         # Get comments for the post (ordered by newest first)
         comments = post.comments.all().order_by('-created_on')
         
-        # Add fresh form to context
+        # Add fresh form and like status to context
         context.update({
             'related_posts': related_posts,
             'comments': comments,
-            'comment_form': CommentForm()
+            'comment_form': CommentForm(),
+            'is_liked': is_liked  # Pass the like status to the template
         })
         return context
     
-
 #@login_required
 #def add_post(request):
 #    if request.method == 'POST':
@@ -157,10 +172,26 @@ class AddPostCreateView(CreateView):
     model = models.Post
     form_class = forms.PostForm
     template_name = 'add_post.html'
-    success_url = reverse_lazy('add_post')
-    
+    success_url = reverse_lazy('homepage')
+        
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
     
 
+
+
+@login_required
+@require_POST
+def like_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    like_exists = Like.objects.filter(user=request.user, post=post).exists()
+    
+    if like_exists:
+        Like.objects.filter(user=request.user, post=post).delete()
+    else:
+        Like.objects.create(user=request.user, post=post)
+    
+    # Use 'next' if provided, otherwise default to post detail
+    # next_url = request.POST.get('next', reverse_lazy('post_detail', args=[post.id]))
+    return redirect('post_detail', id=post.id)

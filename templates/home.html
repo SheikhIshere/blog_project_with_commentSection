@@ -13,8 +13,8 @@
         <div class="collapse d-lg-block" id="categoryCollapse">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white d-none d-md-block">
-    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Categories</h5>
-</div>
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Categories</h5>
+                </div>
 
                 <div class="card-body p-3">
                     <div class="list-group">
@@ -36,66 +36,137 @@
             </div>
         </div>
     </div>
-        <!-- Posts Grid -->
-        <div class="col-12 col-md-9">
+    
+    <!-- Posts Grid -->
+    <div class="col-12 col-md-9">
         <h4>{{ data | length }} results</h4>
         <div class="row">
-                {% for post in data %}
-                <div class="col-lg-4 col-md-6 mb-4 pt-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body d-flex flex-column">
-                            <img src="{{post.image.url}}" class="card-img-top" alt="">
-                            <h5 class="card-title">{{ post.title }}</h5>
-                            <div class="card-text mb-3">
-                                {{ post.content|truncatewords:30 }}
-                                {% if post.content|wordcount > 30 %}
-                                <a href="{% url 'post_detail' post.id %}" style="color: black; font-weight: 600;">see more</a>
-                                {% endif %}
-                                {{ ""|linebreaks }}
-                            </div>
-
-                            <div class="mt-auto">
-                                <p class="text-muted small mb-2">
-                                    <i class="fas fa-user"></i> 
-                                    {% if post.author.get_full_name %}
-                                        {{ post.author.get_full_name }}
-                                    {% else %}
-                                        {{ post.author.username }}
-                                    {% endif %}
-                                </p>
-                            </div>
-                            <div class="mb-3">
-                                {% for cat in post.category.all %}
-                                <span class="badge bg-warning text-dark">{{ cat.name }}</span>
-                                {% endfor %}
-                            </div>
-
-                            <a href="{% url 'post_detail' post.id %}" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-book-reader me-1"></i> Read Full Post
-                            </a>
+            {% for post in data %}
+            <div class="col-lg-4 col-md-6 mb-4 pt-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        {% if post.image %}
+                            <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}" style="height: 400px; object-fit: cover;">
+                        {% endif %}
+                        <h5 class="card-title">{{ post.title }}</h5>
+                        <div class="card-text mb-3">
+                            {{ post.content|truncatewords:30 }}
+                            {% if post.content|wordcount > 30 %}
+                            <a href="{% url 'post_detail' post.id %}" class="text-dark fw-bold text-decoration-none">...more</a>
+                            {% endif %}
+                            {{ ""|linebreaks }}
                         </div>
+
+                        <div class="mt-auto">
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-user"></i> 
+                                {% if post.author.get_full_name %}
+                                    {{ post.author.get_full_name }}
+                                {% else %}
+                                    {{ post.author.username }}
+                                {% endif %}
+                            </p>
+                            <p class="text-muted small">
+                                <i class="far fa-calendar-alt me-1"></i>
+                                {{ post.created_at|date:"M j, Y" }}
+                            </p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {% for cat in post.category.all %}
+                            <span class="badge bg-warning text-dark">{{ cat.name }}</span>
+                            {% endfor %}
+                        </div>
+                        <!-- this is like section -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <!-- Like Section (non-clickable) -->
+                           <!-- Like Count Badge -->
+<div class="engagement-badge text-muted d-inline-block p-2 px-2 me-2" 
+     style="border: 1px solid #e0e0e0; border-radius: 6px; background-color: #f8f9fa;">
+    <span class="engagement-content d-flex align-items-center">
+        <i class="far fa-heart me-1" style="color: #ff6b6b;"></i>
+        {% with likes=post.total_likes %}
+            {% if likes >= 1000000 %}
+                {{ likes|divisibleby:1000000|floatformat:"1"|cut:".0" }}<small class="ms-1">M</small>
+            {% elif likes >= 1000 %}
+                {{ likes|divisibleby:1000|floatformat:"1"|cut:".0" }}<small class="ms-1">k</small>
+            {% else %}
+                {{ likes }}<small class="ms-1">likes</small>
+            {% endif %}
+        {% endwith %}
+    </span>
+</div>
+
+<!-- Comment Count Badge -->
+<div class="engagement-badge d-inline-block p-2 px-3" 
+     style="border: 1px solid #e0e0e0; border-radius: 6px; background-color: #f8f9fa;">
+    <span class="engagement-content d-flex align-items-center fw-medium">                
+        <small class="ms-1">{{ post.comments.count }} comments</small>
+    </span>
+</div>
+
+<style>
+    .engagement-badge {
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+    .engagement-badge:hover {
+        background-color: #f1f3f5 !important;
+        transform: translateY(-1px);
+    }
+    .engagement-content small {
+        font-size: 0.8em;
+        opacity: 0.9;
+    }
+</style>
+
+
+                        
+                            <!-- View Section -->
+                            <a href="{% url 'post_detail' post.id %}" class="engagement-action text-decoration-none ms-3">
+    <span class="engagement-badge d-inline-block p-2 px-3" 
+          style="border: 1px solid #e0e0e0; border-radius: 6px; background-color: #f8f9fa;">
+        <span class="engagement-content d-flex align-items-center fw-medium">
+            <i class="far fa-eye me-2" style="color: #5f3dc4;"></i>
+            <span class="small">View</span>
+        </span>
+    </span>
+</a>
+
+<style>
+    .engagement-action:hover .engagement-badge {
+        background-color: #f1f3f5 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+</style>
+                        </div>
+
                     </div>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
         </div>
-
     </div>
 </div>
+
 <style>
     /* No margin-left on small devices */
-.category-sidebar {
-  margin-left: 0;
-  margin-right: 0;
-}
+    .category-sidebar {
+        margin-left: 0;
+        margin-right: 0;
+    }
 
-/* On md and larger screens, shift left */
-@media (min-width: 768px) {
-  .category-sidebar {
-    margin-left: -20px;
-    margin-right: 20px;
-  }
-}
+    /* On md and larger screens, shift left */
+    @media (min-width: 768px) {
+        .category-sidebar {
+            margin-left: -20px;
+            margin-right: 20px;
+        }
+    }    
 
 </style>
+
+
+
 {% endblock %}

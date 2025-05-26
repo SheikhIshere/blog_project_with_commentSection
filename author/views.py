@@ -5,11 +5,13 @@ from django.contrib.auth import authenticate, login, update_session_auth_hash, l
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from posts.models import Post
+from posts.models import Post, Like
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.views import LogoutView
 from django.urls import reverse_lazy
-from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
 
 #def add_author(request):
 #    if request.method == 'POST':
@@ -29,9 +31,10 @@ def register(request):
     if request.method == 'POST':
         register_form = forms.RegistrationForm(request.POST)  # Form with submitted data
         if register_form.is_valid():
-            register_form.save()
+            user = register_form.save()
+            login(request, user)
             messages.success(request, 'Account created successfully :)')
-            return redirect('user_login')
+            return redirect('profile')
         # If invalid, render the same form with errors
     else:
         register_form = forms.RegistrationForm()  # Empty form for GET requests
@@ -126,3 +129,6 @@ def edit_profile(request):
     else:
         edit_profile = forms.ChangeUserForm( instance = request.user)  # Empty form for GET requests    
     return render(request, 'update_profile.html', {'form': edit_profile})
+
+
+
