@@ -77,71 +77,42 @@
                             <span class="badge bg-warning text-dark">{{ cat.name }}</span>
                             {% endfor %}
                         </div>
-                        <!-- this is like section -->
+                        <!-- Like & Comment Section -->
                         <div class="d-flex justify-content-between align-items-center">
-                            <!-- Like Section (non-clickable) -->
-                           <!-- Like Count Badge -->
-<div class="engagement-badge text-muted d-inline-block p-2 px-2 me-2" 
-     style="border: 1px solid #e0e0e0; border-radius: 6px; background-color: #f8f9fa;">
-    <span class="engagement-content d-flex align-items-center">
-        <i class="far fa-heart me-1" style="color: #ff6b6b;"></i>
-        {% with likes=post.total_likes %}
-            {% if likes >= 1000000 %}
-                {{ likes|divisibleby:1000000|floatformat:"1"|cut:".0" }}<small class="ms-1">M</small>
-            {% elif likes >= 1000 %}
-                {{ likes|divisibleby:1000|floatformat:"1"|cut:".0" }}<small class="ms-1">k</small>
-            {% else %}
-                {{ likes }}<small class="ms-1">likes</small>
-            {% endif %}
-        {% endwith %}
+                            <!-- Like Badge -->
+                            <div class="engagement-badge text-muted me-2">
+                                <span class="engagement-content">
+                                    <i class="far fa-heart me-1" style="color: #ff6b6b;"></i>
+                                    {% with likes=post.total_likes %}
+                                        {% if likes >= 1000000 %}
+                                            {{ likes|divisibleby:1000000|floatformat:"1"|cut:".0" }}<small>M</small>
+                                        {% elif likes >= 1000 %}
+                                            {{ likes|divisibleby:1000|floatformat:"1"|cut:".0" }}<small>k</small>
+                                        {% else %}
+                                            {{ likes }}<small>likes</small>
+                                        {% endif %}
+                                    {% endwith %}
+                                </span>
+                            </div>
+
+                            <!-- Comment Badge -->
+                            <div class="engagement-badge comment">
+    <span class="engagement-content fw-medium">                
+        <small>{{ post.comments.count }} comments</small>
     </span>
 </div>
 
-<!-- Comment Count Badge -->
-<div class="engagement-badge d-inline-block p-2 px-3" 
-     style="border: 1px solid #e0e0e0; border-radius: 6px; background-color: #f8f9fa;">
-    <span class="engagement-content d-flex align-items-center fw-medium">                
-        <small class="ms-1">{{ post.comments.count }} comments</small>
-    </span>
-</div>
 
-<style>
-    .engagement-badge {
-        transition: all 0.2s ease;
-        font-size: 0.9rem;
-    }
-    .engagement-badge:hover {
-        background-color: #f1f3f5 !important;
-        transform: translateY(-1px);
-    }
-    .engagement-content small {
-        font-size: 0.8em;
-        opacity: 0.9;
-    }
-</style>
-
-
-                        
-                            <!-- View Section -->
-                            <a href="{% url 'post_detail' post.id %}" class="engagement-action text-decoration-none ms-3">
-    <span class="engagement-badge d-inline-block p-2 px-3" 
-          style="border: 1px solid #e0e0e0; border-radius: 6px; background-color: #f8f9fa;">
-        <span class="engagement-content d-flex align-items-center fw-medium">
-            <i class="far fa-eye me-2" style="color: #5f3dc4;"></i>
-            <span class="small">View</span>
-        </span>
-    </span>
-</a>
-
-<style>
-    .engagement-action:hover .engagement-badge {
-        background-color: #f1f3f5 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-</style>
+                            <!-- View Button -->
+                            <a href="{% url 'post_detail' post.id %}" class="engagement-action text-decoration-none ms-2">
+                                <span class="engagement-badge">
+                                    <span class="engagement-content fw-medium">
+                                        <i class="far fa-eye me-1" style="color: #5f3dc4;"></i>
+                                        <span class="small">View</span>
+                                    </span>
+                                </span>
+                            </a>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -151,22 +122,85 @@
 </div>
 
 <style>
-    /* No margin-left on small devices */
+    /* Category Sidebar Spacing */
     .category-sidebar {
         margin-left: 0;
         margin-right: 0;
     }
-
-    /* On md and larger screens, shift left */
     @media (min-width: 768px) {
         .category-sidebar {
             margin-left: -20px;
             margin-right: 20px;
         }
-    }    
+    }
+
+    /* Engagement Badges (Smaller Size) */
+    .engagement-badge {
+        display: inline-block;
+        padding: 0.2rem 0.4rem; /* Smaller padding */
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+        font-size: 0.75rem; /* Slightly smaller font */
+        line-height: 1.1;
+    }
+
+    .engagement-badge:hover {
+        background-color: #f1f3f5 !important;
+        transform: translateY(-1px);
+    }
+
+    .engagement-content {
+        display: flex;
+        align-items: center;
+    }
+
+    .engagement-content small {
+        font-size: 0.65em; /* Smaller size for small text */
+        margin-left: 2px;
+    }
+
+    @media (min-width: 768px) {
+        .engagement-content {
+            flex-direction: row;
+        }
+    }
+
+    .engagement-action {
+        font-size: 0.75rem; /* Match button text size */
+    }
+
+    .engagement-content i {
+        font-size: 0.9rem; /* Smaller icon */
+        margin-right: 3px;
+    }
+    /* Make comment badge slightly bigger */
+    .engagement-badge.comment {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .engagement-badge.comment .engagement-content small {
+        font-size: 0.75em;
+    }
+
+    @media (max-width: 767.98px) {
+    .engagement-badge, .engagement-badge.comment {
+        padding: 0.4rem 0.6rem;
+        font-size: 1.3rem;
+    }
+
+    .engagement-badge .engagement-content small {
+        font-size: 0.85em;
+    }
+
+    .engagement-content i {
+        font-size: 1rem;
+    }
+}
+
 
 </style>
-
-
 
 {% endblock %}
