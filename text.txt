@@ -1,16 +1,2 @@
-form method="post" action="{% url 'like_post' post.id %}" class="flex-grow-1 w-100">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ request.path }}">
-        <button type="submit" class="btn btn-outline-danger btn-like w-100">
-            <span class="like-content">
-                {% if user.is_authenticated and is_liked %}
-                    <i class="fas fa-heart me-1"></i> Liked
-                {% else %}
-                    <i class="far fa-heart me-1"></i> Like
-                {% endif %}
-            </span>
-            <span class="badge bg-primary ms-2">
-                {{ post.total_likes }}
-            </span>
-        </button>
-    </form>
+pass python anywhere
+agnfhd5362@*
