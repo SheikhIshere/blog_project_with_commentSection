@@ -17,6 +17,11 @@ from pathlib import Path
 import dj_database_url  # <- add this below other imports
 # this is for render
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://express-yourself.onrender.com',
+]
+
+
 from dotenv import load_dotenv
 load_dotenv()
 
